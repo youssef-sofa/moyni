@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --primary-gold: #f59e0b;
+  --primary-gold-light: #fde68a;
+  --coptic-red: #ef4444;
+  --coptic-blue: #3b82f6;
+  --glass-bg: rgba(15, 23, 42, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --card-bg: rgba(30, 41, 59, 0.82);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Alexandria', 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  direction: rtl;
+  text-align: right;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  color: #f1f5f9;
+  background-color: #020617;
+  overflow-x: hidden;
+}
+
+/* Background with the user uploaded photo */
+.app-background-container {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-image: url('../assets/background.jpg');
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transition: filter 0.3s ease;
+}
+
+.app-background-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    rgba(2, 6, 23, 0.82) 0%,
+    rgba(15, 23, 42, 0.88) 45%,
+    rgba(2, 6, 23, 0.94) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 12px 35px -4px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.glass-header {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-input {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f8fafc;
+  transition: all 0.2s ease-in-out;
+}
+
+.glass-input:focus {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+  outline: none;
+}
+
+.glass-card-interactive {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.glass-card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 16px 30px -5px rgba(245, 158, 11, 0.15);
+}
+
+/* Badge colors for the 5 tracks */
+.badge-track-1 { /* استهبال */
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.35));
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+.badge-track-2 { /* متكبر */
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.35));
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fde68a;
+}
+.badge-track-3 { /* التنطيط */
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(147, 51, 234, 0.35));
+  border: 1px solid rgba(168, 85, 247, 0.5);
+  color: #d8b4fe;
+}
+.badge-track-4 { /* نقص المحبة */
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(219, 39, 119, 0.35));
+  border: 1px solid rgba(236, 72, 153, 0.5);
+  color: #fbcfe8;
+}
+.badge-track-5 { /* ميعرفش حاجة عن ربنا */
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.35));
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  color: #93c5fd;
+}
+
+/* Golden text gradient */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Coptic Title Font Accent */
+.coptic-symbol {
+  font-family: 'Alexandria', serif;
+  letter-spacing: 1px;
+}
+
+/* QR Code Scan Laser Line */
+.scan-laser {
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #f59e0b, #fbbf24, #f59e0b, transparent);
+  box-shadow: 0 0 15px #f59e0b, 0 0 8px #fbbf24;
+  animation: scanning 2s infinite ease-in-out;
+}
+
+@keyframes scanning {
+  0% { top: 0%; opacity: 0.8; }
+  50% { top: 96%; opacity: 1; }
+  100% { top: 0%; opacity: 0.8; }
+}
+
+/* Pulse animation for urgent pastoral care (افتقاد) */
+@keyframes urgent-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+}
+
+.urgent-visitation-card {
+  animation: urgent-pulse 2.5s infinite;
+  border-color: rgba(239, 68, 68, 0.6) !important;
+}
+
+/* Countdown Clock Display */
+.countdown-box {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  min-width: 60px;
+  text-align: center;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.7);
+}
+
+/* Bottom Nav bar for mobile */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Print styles for Monthly Leaderboard / Certificates */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .app-background-container, .app-background-overlay, .mobile-bottom-nav, button {
+    display: none !important;
+  }
+  .glass-panel {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    color: #000 !important;
+  }
+}

@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>اديني واحدة ⲙⲟⲓ ⲛⲏⲓ | منصة المسارات الروحية والتقويمية</title>
+  
+  <!-- Meta tags for PWA / Mobile / Windows -->
+  <meta name="description" content="تطبيق اديني واحدة ⲙⲟⲓ ⲛⲏⲓ لمتابعة المسارات الروحية والتقويمية للشباب والخدام">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="اديني واحدة">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="assets/icons/favicon.png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+
+  <!-- Local and CDN Stylesheets -->
+  <link rel="stylesheet" href="css/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="antialiased selection:bg-amber-500 selection:text-black pb-24 md:pb-10">
+
+  <!-- Ambient Photo Background (User Uploaded Photo) -->
+  <div class="app-background-container" id="app-bg-image"></div>
+  <div class="app-background-overlay" id="app-bg-overlay"></div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="glass-header sticky top-0 z-30 px-4 py-3 shadow-lg">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      
+      <!-- Logo & App Title -->
+      <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="app.showHomeView()">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-600 via-yellow-500 to-amber-300 p-0.5 shadow-md flex items-center justify-center">
+          <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
+            <i class="fa-solid fa-cross text-amber-400 text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2 space-x-reverse">
+            <h1 class="text-lg md:text-xl font-black text-gold-gradient tracking-wide">اديني واحدة</h1>
+            <span class="text-xs px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-md border border-amber-500/30 coptic-symbol font-bold">ⲙⲟⲓ ⲛⲏⲓ</span>
+          </div>
+          <p class="text-[11px] text-slate-300 flex items-center gap-1">
+            <span>مسارات النمو والتقويم الروحي</span>
+            <span class="text-amber-400">• سن 15+</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Header Action Controls -->
+      <div class="flex items-center space-x-2 space-x-reverse">
+        
+        <!-- PWA Install Button (if available) -->
+        <button id="pwa-install-btn" onclick="app.promptPwaInstall()" class="hidden text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg shadow-md transition flex items-center gap-1.5">
+          <i class="fa-solid fa-download"></i>
+          <span class="hidden sm:inline">تثبيت التطبيق</span>
+        </button>
+
+        <!-- Notification Bell (Supervisor Alert Badge) -->
+        <button onclick="app.openSupervisorTab('visitation')" class="relative p-2 rounded-xl bg-slate-800/80 text-amber-400 hover:bg-slate-700/80 border border-slate-700 transition" title="تنبيهات الافتقاد">
+          <i class="fa-solid fa-bell text-base"></i>
+          <span id="visitation-badge-count" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">0</span>
+        </button>
+
+        <!-- User Role / Account Profile Button -->
+        <button onclick="app.toggleUserMenu()" class="flex items-center gap-2 bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 px-3 py-1.5 rounded-xl transition text-sm">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-xs" id="user-avatar-initials">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <span id="user-display-name" class="font-medium text-slate-200 max-w-[90px] md:max-w-[130px] truncate">مرحباً</span>
+          <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Banner for Supervisor (Visible when someone's track has ended) -->
+  <div id="visitation-urgent-banner" class="hidden max-w-5xl mx-auto px-4 mt-3">
+    <div class="bg-gradient-to-r from-red-900/80 via-red-800/90 to-amber-900/80 border border-red-500/60 rounded-2xl p-3 text-white flex items-center justify-between shadow-lg backdrop-blur-md">
+      <div class="flex items-center space-x-3 space-x-reverse">
+        <div class="w-10 h-10 rounded-xl bg-red-500/30 flex items-center justify-center text-red-300 text-lg flex-shrink-0 animate-bounce">
+          <i class="fa-solid fa-person-walking-arrow-right"></i>
+        </div>
+        <div>
+          <p class="font-bold text-sm text-red-100" id="urgent-banner-title">تنبيه افتقاد رعوي عاجل!</p>
+          <p class="text-xs text-red-200" id="urgent-banner-text">هناك شباب انتهت مدة مسارهم ومحتاجين افتقاد ومتابعة الآن.</p>
+        </div>
+      </div>
+      <button onclick="app.openSupervisorTab('visitation')" class="text-xs bg-white text-red-900 hover:bg-red-100 font-bold px-3 py-2 rounded-xl shadow transition flex-shrink-0">
+        فتح قائمة الافتقاد
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-5xl mx-auto px-4 py-4 md:py-6">
+    
+    <!-- ========================================== -->
+    <!-- VIEW 1: YOUTH DASHBOARD (المخدوم / الشاب)   -->
+    <!-- ========================================== -->
+    <section id="view-youth" class="space-y-6">
+
+      <!-- Active Track Card (Shown when user has an active track) -->
+      <div id="active-track-container" class="hidden">
+        <!-- Rendered dynamically by app.renderActiveTrack() -->
+      </div>
+
+      <!-- No Active Track Hero (Shown when user has no active track) -->
+      <div id="no-track-container" class="space-y-6">
+        
+        <!-- Welcome Banner with Church photo preview -->
+        <div class="glass-panel rounded-3xl p-6 md:p-8 relative overflow-hidden border border-amber-500/20">
+          <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="text-center md:text-right space-y-3 max-w-xl">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <i class="fa-solid fa-sparkles text-amber-400"></i>
+                خدمة الشباب ورعاية النفوس
+              </span>
+              <h2 class="text-2xl md:text-3xl font-extrabold text-white leading-tight">
+                أهلاً بيك في <span class="text-gold-gradient">اديني واحدة ⲙⲟⲓ ⲛⲏⲓ</span>
+              </h2>
+              <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+                مسارات روحية تقويمية مبنية على آيات الكتاب المقدس وكلمات الآباء، بإشراف ومحبة خادمك. جاهز تبدأ مسارك وتنمو روحياً؟
+              </p>
+              
+              <div class="pt-2 flex flex-wrap gap-3 justify-center md:justify-start">
+                <button onclick="app.openScannerModal()" class="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black px-6 py-3 rounded-2xl shadow-xl hover:shadow-amber-500/25 transition transform hover:-translate-y-0.5 flex items-center gap-2 text-sm md:text-base">
+                  <i class="fa-solid fa-qrcode text-lg"></i>
+                  <span>مسح كود الـ QR للمسار</span>
+                </button>
+                <button onclick="app.showLeaderboardView()" class="bg-slate-800/80 hover:bg-slate-700/80 text-amber-300 font-bold px-5 py-3 rounded-2xl border border-slate-700 hover:border-amber-500/40 transition flex items-center gap-2 text-sm">
+                  <i class="fa-solid fa-trophy"></i>
+                  <span>لوحة الترتيب الشهري</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Visual Badge Card with the photo preview -->
+            <div class="relative group cursor-pointer" onclick="app.openPhotoViewer()">
+              <div class="w-48 h-48 md:w-56 md:h-56 rounded-3xl overflow-hidden border-2 border-amber-500/40 shadow-2xl relative">
+                <img src="assets/background.jpg" alt="شباب الخدمة" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                <div class="absolute bottom-3 inset-x-3 text-center">
+                  <span class="text-xs bg-slate-900/90 text-amber-300 px-2.5 py-1 rounded-full border border-amber-500/40 font-bold backdrop-blur-sm">
+                    «ⲙⲟⲓ ⲛⲏⲓ» اسرة الشباب
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- The 5 Tracks Overview -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+              <i class="fa-solid fa-route text-amber-400"></i>
+              <span>المسارات الخمسة في البرنامج</span>
+            </h3>
+            <span class="text-xs text-slate-400">الدخول بأمر وإشراف المشرف</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-3" id="tracks-cards-grid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- How It Works Card -->
+        <div class="glass-panel rounded-2xl p-5 border border-slate-800 space-y-3">
+          <h4 class="text-sm font-bold text-amber-400 flex items-center gap-2">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>إزاي بيشتغل نظام «اديني واحدة»؟</span>
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+              <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold flex-shrink-0">١</div>
+              <div>
+                <b class="text-slate-100 block mb-1">استلام كود المسار</b>
+                المشرف بيحدد لك المسار ومدته ودرجاته وبيبعتلك كود الـ QR الخاص باسمك.
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+              <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold flex-shrink-0">٢</div>
+              <div>
+                <b class="text-slate-100 block mb-1">المعايشة الروحية اليومية</b>
+                بتقرأ الآيات بالشاهد، وكلمات التوجيه الروحي، وتصلي بها طول فترة المسار.
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+              <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold flex-shrink-0">٣</div>
+              <div>
+                <b class="text-slate-100 block mb-1">الافتقاد والترتيب الشهري</b>
+                أول ما مدتك تخلص، بيوصل إشعار للمشرف لافتقادك، ونقاطك بتضاف للـ Rank الشهري!
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: LEADERBOARD / RANKS (الترتيب الشهري) -->
+    <!-- ========================================== -->
+    <section id="view-leaderboard" class="hidden space-y-6">
+      
+      <!-- Leaderboard Header & Filters -->
+      <div class="glass-panel rounded-3xl p-6 border border-amber-500/30 space-y-5">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🏆</span>
+              <h2 class="text-2xl font-black text-gold-gradient">لوحة الشرف والترتيب الشهري</h2>
+            </div>
+            <p class="text-slate-300 text-xs md:text-sm mt-1">
+              ترتيب الحاصلين على «واحدة» والدرجات المعتمدة في نهاية كل شهر لكل مسار
+            </p>
+          </div>
+
+          <!-- Month Selector -->
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-300 font-bold">الشهر:</label>
+            <select id="leaderboard-month-select" onchange="app.refreshLeaderboard()" class="glass-input rounded-xl px-3 py-1.5 text-xs text-amber-300 font-bold">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Track Filters Pills (All + The 5 Tracks) -->
+        <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800" id="leaderboard-track-tabs">
+          <button onclick="app.setLeaderboardTrackFilter('all')" data-track="all" class="leaderboard-tab-btn active px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-950">
+            الكل (عام)
+          </button>
+          <button onclick="app.setLeaderboardTrackFilter(1)" data-track="1" class="leaderboard-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-slate-800/80 text-slate-300 hover:text-white">
+            ١- استهبال
+          </button>
+          <button onclick="app.setLeaderboardTrackFilter(2)" data-track="2" class="leaderboard-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-slate-800/80 text-slate-300 hover:text-white">
+            ٢- متكبر
+          </button>
+          <button onclick="app.setLeaderboardTrackFilter(3)" data-track="3" class="leaderboard-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-slate-800/80 text-slate-300 hover:text-white">
+            ٣- التنطيط
+          </button>
+          <button onclick="app.setLeaderboardTrackFilter(4)" data-track="4" class="leaderboard-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-slate-800/80 text-slate-300 hover:text-white">
+            ٤- نقص المحبة
+          </button>
+          <button onclick="app.setLeaderboardTrackFilter(5)" data-track="5" class="leaderboard-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-slate-800/80 text-slate-300 hover:text-white">
+            ٥- ميعرفش حاجة عن ربنا
+          </button>
+        </div>
+      </div>
+
+      <!-- Top 3 Podium (Golden, Silver, Bronze) -->
+      <div id="podium-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <!-- Full Leaderboard Table / Cards -->
+      <div class="glass-panel rounded-3xl p-5 border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-list-ol text-amber-400"></i>
+            <span>قائمة المجاهدين والدرجات المكتسبة</span>
+          </h3>
+          <button onclick="window.print()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-print"></i>
+            <span>طباعة الترتيب</span>
+          </button>
+        </div>
+
+        <div id="leaderboard-list" class="space-y-2">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 3: SUPERVISOR DASHBOARD (قسم المشرف)  -->
+    <!-- ========================================== -->
+    <section id="view-supervisor" class="hidden space-y-6">
+
+      <!-- Supervisor Subnav Tabs -->
+      <div class="glass-panel rounded-2xl p-2 flex flex-wrap gap-2 border border-amber-500/30">
+        <button onclick="app.switchSupervisorTab('generator')" id="sup-tab-btn-generator" class="sup-tab-btn active flex-1 min-w-[120px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 bg-amber-500 text-slate-950">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>توليد كود الـ QR</span>
+        </button>
+        <button onclick="app.switchSupervisorTab('visitation')" id="sup-tab-btn-visitation" class="sup-tab-btn relative flex-1 min-w-[120px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:text-white">
+          <i class="fa-solid fa-person-walking-arrow-right"></i>
+          <span>سجل الافتقاد</span>
+          <span id="sup-visitation-tab-badge" class="hidden px-1.5 py-0.5 bg-red-600 text-white text-[10px] rounded-full">0</span>
+        </button>
+        <button onclick="app.switchSupervisorTab('verses')" id="sup-tab-btn-verses" class="sup-tab-btn flex-1 min-w-[120px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:text-white">
+          <i class="fa-solid fa-book-bible"></i>
+          <span>إدارة الآيات والكلمات</span>
+        </button>
+        <button onclick="app.switchSupervisorTab('youth')" id="sup-tab-btn-youth" class="sup-tab-btn flex-1 min-w-[120px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:text-white">
+          <i class="fa-solid fa-users"></i>
+          <span>سجل المشتركين</span>
+        </button>
+        <button onclick="app.switchSupervisorTab('security')" id="sup-tab-btn-security" class="sup-tab-btn flex-1 min-w-[120px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:text-white">
+          <i class="fa-solid fa-key"></i>
+          <span>بيانات الدخول (Gmail)</span>
+        </button>
+      </div>
+
+      <!-- SUB-TAB 1: QR Generator -->
+      <div id="sup-subtab-generator" class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Generator Form -->
+          <div class="lg:col-span-7 glass-panel rounded-3xl p-6 border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 class="font-bold text-base text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                <span>إنشاء كود مسار جديد لمخدوم</span>
+              </h3>
+              <span class="text-xs text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">قسم الخادم</span>
+            </div>
+
+            <form id="qr-generator-form" onsubmit="app.handleGenerateQR(event)" class="space-y-4">
+              
+              <!-- Select / Enter Youth Name -->
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1.5">اسم الشخص / المخدوم:</label>
+                <div class="flex gap-2">
+                  <select id="gen-user-select" onchange="app.onGenUserSelectChange()" class="glass-input rounded-xl px-3 py-2 text-sm w-1/2">
+                    <option value="">-- اختر من المسجلين --</option>
+                  </select>
+                  <input type="text" id="gen-user-name" placeholder="أو اكتب الاسم ثلاثي" required class="glass-input rounded-xl px-3 py-2 text-sm flex-1">
+                </div>
+              </div>
+
+              <!-- Select Track (1 to 5) -->
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1.5">المسار (العقابة الروحية):</label>
+                <select id="gen-track-id" onchange="app.onGenTrackChange()" class="glass-input rounded-xl px-3 py-2.5 text-sm w-full font-bold text-amber-300">
+                  <option value="1">١- استهبال (الهزل وعدم الجدية)</option>
+                  <option value="2">٢- متكبر (الكبرياء والتعالي)</option>
+                  <option value="3">٣- التنطيط (الفوضى وحب الظهور)</option>
+                  <option value="4">٤- نقص المحبة (الإدانة والقسوة)</option>
+                  <option value="5">٥- ميعرفش حاجة عن ربنا (الجهل الروحي)</option>
+                </select>
+              </div>
+
+              <!-- Duration and Points Row -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <!-- Duration -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-300 mb-1.5">مدة المسار (يحددها المشرف):</label>
+                  <div class="flex gap-2">
+                    <input type="number" id="gen-duration-val" min="1" max="365" value="7" required class="glass-input rounded-xl px-3 py-2 text-sm w-20 text-center font-bold">
+                    <select id="gen-duration-unit" class="glass-input rounded-xl px-3 py-2 text-sm flex-1">
+                      <option value="days">أيام</option>
+                      <option value="hours">ساعات (للتجربة السريعة)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Points (الدرجات المحددة في الـ QR) -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-300 mb-1.5">الدرجات المخصصة لهذا الكود:</label>
+                  <div class="flex items-center gap-2">
+                    <input type="number" id="gen-points" min="5" max="500" step="5" value="50" required class="glass-input rounded-xl px-3 py-2 text-sm flex-1 text-center font-bold text-amber-300">
+                    <span class="text-xs text-slate-400">درجة</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Special Recurring Track Option -->
+              <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" id="gen-is-special" onchange="app.toggleSpecialFrequency(this.checked)" class="w-4 h-4 text-amber-500 rounded bg-slate-900 border-slate-700 focus:ring-amber-500">
+                  <span class="text-xs font-bold text-amber-200">
+                    ⭐ كود خاص لشخص معين (بمعدل زمني دوري تحت إشراف المشرف)
+                  </span>
+                </label>
+
+                <div id="gen-frequency-box" class="hidden pt-2 border-t border-amber-500/20 flex items-center gap-3">
+                  <label class="text-xs text-slate-300">المعدل الزمني الدوري:</label>
+                  <select id="gen-interval-days" class="glass-input rounded-xl px-3 py-1.5 text-xs text-amber-300 font-bold">
+                    <option value="2">كل يومين</option>
+                    <option value="3" selected>كل ٣ أيام</option>
+                    <option value="7">كل أسبوع</option>
+                    <option value="14">كل أسبوعين</option>
+                  </select>
+                  <span class="text-[11px] text-slate-400">(يتكرر التقييم دورياً)</span>
+                </div>
+              </div>
+
+              <!-- Submit button -->
+              <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black py-3 rounded-2xl shadow-lg hover:shadow-amber-500/20 transition flex items-center justify-center gap-2 text-sm">
+                <i class="fa-solid fa-qrcode text-base"></i>
+                <span>توليد كود الـ QR واستخراجه</span>
+              </button>
+
+            </form>
+          </div>
+
+          <!-- Generated QR Code Display & Share -->
+          <div class="lg:col-span-5 glass-panel rounded-3xl p-6 border border-slate-800 flex flex-col items-center justify-center text-center space-y-4">
+            <h4 class="text-sm font-bold text-slate-300">معاينة كود المسار المعتمد</h4>
+            
+            <div id="qr-output-box" class="p-4 bg-white rounded-2xl shadow-2xl border-4 border-amber-500/40 relative">
+              <div id="generated-qrcode" class="w-[200px] h-[200px] flex items-center justify-center">
+                <!-- QR rendered here -->
+              </div>
+            </div>
+
+            <!-- Details under QR -->
+            <div id="qr-details-summary" class="w-full text-right bg-slate-900/60 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
+              <div class="flex justify-between">
+                <span class="text-slate-400">الاسم:</span>
+                <span class="font-bold text-amber-300" id="summary-name">مينا سامي</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">المسار:</span>
+                <span class="font-bold text-slate-200" id="summary-track">١- استهبال</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">المدة:</span>
+                <span class="font-bold text-slate-200" id="summary-duration">7 أيام</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">الدرجات:</span>
+                <span class="font-bold text-amber-400" id="summary-points">50 درجة</span>
+              </div>
+            </div>
+
+            <!-- Action buttons: WhatsApp / Download / Copy -->
+            <div class="w-full grid grid-cols-2 gap-2">
+              <button onclick="app.shareQRViaWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>إرسال واتساب</span>
+              </button>
+              <button onclick="app.downloadGeneratedQR()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                <i class="fa-solid fa-download"></i>
+                <span>حفظ الصورة</span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SUB-TAB 2: Pastoral Visitation & Expired Tracks -->
+      <div id="sup-subtab-visitation" class="hidden space-y-6">
+        <div class="glass-panel rounded-3xl p-6 border border-red-500/30 space-y-5">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-800">
+            <div>
+              <h3 class="text-lg font-black text-red-400 flex items-center gap-2">
+                <i class="fa-solid fa-heart-circle-bolt"></i>
+                <span>سجل الافتقاد والمتابعة الرعوية</span>
+              </h3>
+              <p class="text-xs text-slate-300 mt-1">
+                الشباب الذين انتهت فترة مساراتهم وبحاجة إلى افتقاد وتشجيع من المشرف
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs">
+              <span class="px-3 py-1.5 rounded-xl bg-red-500/20 text-red-300 border border-red-500/40 font-bold" id="visitation-pending-counter">
+                0 محتاج افتقاد
+              </span>
+              <span class="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold" id="visitation-completed-counter">
+                0 تم افتقادهم
+              </span>
+            </div>
+          </div>
+
+          <!-- Cards Grid for Expired Tracks needing visitation -->
+          <div id="visitation-cards-list" class="space-y-4">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 3: Bible Verses & Spiritual Words Management -->
+      <div id="sup-subtab-verses" class="hidden space-y-6">
+        <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-6">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-800">
+            <div>
+              <h3 class="text-lg font-black text-amber-300 flex items-center gap-2">
+                <i class="fa-solid fa-book-bible"></i>
+                <span>إدارة الآيات والكلمات الروحية للمسارات</span>
+              </h3>
+              <p class="text-xs text-slate-300 mt-1">
+                المشرف يمكنه إضافة أو تعديل الآيات مع الشاهد والكلمات الروحية لكل مسار من الـ 5 مسارات
+              </p>
+            </div>
+
+            <!-- Track Selector for content editing -->
+            <select id="content-track-select" onchange="app.renderContentManager()" class="glass-input rounded-xl px-4 py-2 text-xs md:text-sm font-bold text-amber-300">
+              <option value="1">١- مسار استهبال</option>
+              <option value="2">٢- مسار متكبر</option>
+              <option value="3">٣- مسار التنطيط</option>
+              <option value="4">٤- مسار نقص المحبة</option>
+              <option value="5">٥- مسار ميعرفش حاجة عن ربنا</option>
+            </select>
+          </div>
+
+          <!-- Add New Verse & Spiritual Word Form -->
+          <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <h4 class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-plus-circle"></i>
+              <span>إضافة آية جديدة مع الشاهد أو كلمة روحية لهذا المسار</span>
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+              <div class="md:col-span-7">
+                <input type="text" id="new-verse-text" placeholder="نص الآية الكريمة أو الكلمة الروحية..." class="glass-input rounded-xl px-3 py-2 text-xs w-full">
+              </div>
+              <div class="md:col-span-3">
+                <input type="text" id="new-verse-ref" placeholder="الشاهد (مثال: أمثال 16: 18)" class="glass-input rounded-xl px-3 py-2 text-xs w-full">
+              </div>
+              <div class="md:col-span-2">
+                <button onclick="app.addNewVerseToTrack()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2 px-3 rounded-xl text-xs transition">
+                  إضافة
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Verses & Words in this track -->
+          <div id="content-verses-list" class="space-y-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 4: Youth Directory -->
+      <div id="sup-subtab-youth" class="hidden space-y-6">
+        <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-5">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div>
+              <h3 class="text-lg font-black text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-address-book text-amber-400"></i>
+                <span>دليل الشباب والمخدومين (سن 15+)</span>
+              </h3>
+              <p class="text-xs text-slate-300 mt-1">جميع المسجلين وحالات مساراتهم الحالية ونقاطهم</p>
+            </div>
+            <button onclick="app.openNewUserModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>تسجيل مخدوم جديد</span>
+            </button>
+          </div>
+
+          <div id="youth-directory-list" class="space-y-3">
+            <!-- Dynamically rendered -->
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 5: Security / Manage Supervisor Gmail & Password -->
+      <div id="sup-subtab-security" class="hidden space-y-6">
+        <div class="glass-panel rounded-3xl p-6 border border-slate-800 max-w-lg mx-auto space-y-5">
+          <div class="pb-3 border-b border-slate-800">
+            <h3 class="text-lg font-black text-amber-300 flex items-center gap-2">
+              <i class="fa-brands fa-google text-amber-400"></i>
+              <span>إعدادات حساب المشرف (Gmail والباسوورد)</span>
+            </h3>
+            <p class="text-xs text-slate-300 mt-1">يُشترط أن يكون البريد ينتهي بـ @gmail.com للدخول لقسم المشرف</p>
+          </div>
+
+          <form onsubmit="app.handleChangeSupervisorCredentials(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">حساب الـ Gmail الحالي / الجديد:</label>
+              <input type="email" id="change-sup-gmail" required placeholder="supervisor@gmail.com" class="glass-input rounded-xl px-3 py-2 text-sm w-full font-mono" dir="ltr">
+              <span class="text-[10px] text-slate-400 block mt-1">يجب أن ينتهي البريد بـ @gmail.com فقط</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">كلمة المرور الجديدة (الباسوورد):</label>
+              <input type="password" id="change-sup-password" required placeholder="أدخل كلمة المرور الجديدة" class="glass-input rounded-xl px-3 py-2 text-sm w-full font-mono" dir="ltr">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">تأكيد كلمة المرور الجديدة:</label>
+              <input type="password" id="change-sup-password-confirm" required placeholder="أعد إدخال كلمة المرور" class="glass-input rounded-xl px-3 py-2 text-sm w-full font-mono" dir="ltr">
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black py-2.5 rounded-xl shadow-lg transition text-sm">
+              حفظ بيانات الدخول الجديدة
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: REGISTRATION / LOGIN (AGE 15+)       -->
+  <!-- ========================================== -->
+  <div id="login-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-6 md:p-8 border border-amber-500/40 shadow-2xl space-y-5">
+      
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-slate-950 text-2xl shadow-lg">
+          <i class="fa-solid fa-cross"></i>
+        </div>
+        <h3 class="text-xl font-black text-white">تسجيل الدخول في «اديني واحدة»</h3>
+        <p class="text-xs text-amber-300 font-bold bg-amber-500/10 py-1 px-3 rounded-full inline-block border border-amber-500/20">
+          ⚠️ تنبيه: التطبيق مخصص للشباب من سن 15 سنة فما فوق
+        </p>
+      </div>
+
+      <!-- Role Tabs (Youth vs Supervisor) -->
+      <div class="flex rounded-xl bg-slate-900/80 p-1 border border-slate-800 text-xs font-bold">
+        <button type="button" onclick="app.switchLoginRole('youth')" id="role-tab-youth" class="flex-1 py-2 rounded-lg bg-amber-500 text-slate-950 transition">
+          مخدوم / شاب
+        </button>
+        <button type="button" onclick="app.switchLoginRole('supervisor')" id="role-tab-supervisor" class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">
+          خادم / مشرف
+        </button>
+      </div>
+
+      <!-- Youth Form -->
+      <form id="form-youth-login" onsubmit="app.handleYouthSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">الاسم بالكامل:</label>
+          <input type="text" id="login-youth-name" required placeholder="مثال: بيشوي عماد رمزي" class="glass-input rounded-xl px-3 py-2 text-sm w-full">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">السن (15 سنة فأكثر):</label>
+            <input type="number" id="login-youth-age" min="15" max="99" required placeholder="السن" class="glass-input rounded-xl px-3 py-2 text-sm w-full font-bold text-amber-300 text-center">
+            <span id="age-error-hint" class="hidden text-[10px] text-red-400 block mt-1">السن يجب أن يكون 15 سنة أو أكثر</span>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">رقم الموبايل:</label>
+            <input type="tel" id="login-youth-phone" required placeholder="01xxxxxxxxx" class="glass-input rounded-xl px-3 py-2 text-sm w-full">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">الكنيسة / أسرة التربية الكنسية:</label>
+          <input type="text" id="login-youth-church" placeholder="مثال: كنيسة الشهيد العظيم مارجرجس" class="glass-input rounded-xl px-3 py-2 text-sm w-full">
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black py-2.5 rounded-xl shadow-lg transition mt-4 text-sm">
+          دخول ومتابعة مساري
+        </button>
+      </form>
+
+      <!-- Supervisor Form (Gmail + Password Only) -->
+      <form id="form-supervisor-login" onsubmit="app.handleSupervisorSubmit(event)" class="space-y-4 hidden">
+        <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-center gap-2.5">
+          <i class="fa-brands fa-google text-amber-400 text-base flex-shrink-0"></i>
+          <span>دخول قسم المشرف مخصص عبر <b>حساب Gmail</b> وكلمة المرور فقط.</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">البريد الإلكتروني (حساب Gmail):</label>
+          <div class="relative">
+            <input type="email" id="login-sup-gmail" required placeholder="supervisor@gmail.com" class="glass-input rounded-xl px-3 py-2.5 text-sm w-full font-mono pl-9" dir="ltr">
+            <i class="fa-regular fa-envelope absolute left-3 top-3 text-slate-400 text-sm pointer-events-none"></i>
+          </div>
+          <span id="sup-email-error-hint" class="hidden text-[10px] text-red-400 block mt-1">يجب إدخال بريد ينتهي بـ @gmail.com فقط</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">كلمة المرور (الباسوورد):</label>
+          <div class="relative">
+            <input type="password" id="login-sup-password" required placeholder="••••••••" class="glass-input rounded-xl px-3 py-2.5 text-sm w-full font-mono pl-9" dir="ltr">
+            <button type="button" onclick="app.togglePasswordVisibility('login-sup-password', this)" class="absolute left-3 top-2.5 text-slate-400 hover:text-amber-300 transition">
+              <i class="fa-regular fa-eye text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-[11px] text-slate-400 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+          <span>الافتراضي: <b class="text-amber-300 font-mono">supervisor@gmail.com</b></span>
+          <button type="button" onclick="app.autofillSupervisorCreds()" class="text-amber-400 hover:underline font-bold text-[11px]">
+            ملء تلقائي
+          </button>
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black py-2.5 rounded-xl shadow-lg transition text-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>دخول لوحة تحكم المشرف</span>
+        </button>
+      </form>
+
+      <!-- Quick Demo Switcher -->
+      <div class="pt-3 border-t border-slate-800 text-center">
+        <p class="text-[11px] text-slate-400 mb-2">أو جرّب الدخول السريع بأحد الحسابات التجريبية:</p>
+        <div class="flex flex-wrap justify-center gap-1.5">
+          <button onclick="app.quickLoginDemo('u1')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-300 px-2.5 py-1 rounded-lg border border-slate-700">
+            مينا سامي (مسار نشط)
+          </button>
+          <button onclick="app.quickLoginDemo('u2')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-red-300 px-2.5 py-1 rounded-lg border border-slate-700">
+            بيشوي (محتاج افتقاد)
+          </button>
+          <button onclick="app.quickLoginDemo('supervisor')" class="text-[11px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-2.5 py-1 rounded-lg border border-amber-500/30 font-bold">
+            مشرف البرنامج
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: QR CODE SCANNER                     -->
+  <!-- ========================================== -->
+  <div id="scanner-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-amber-500/40 shadow-2xl space-y-4">
+      
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-base text-white flex items-center gap-2">
+          <i class="fa-solid fa-camera text-amber-400"></i>
+          <span>مسح كود المسار المعتمد</span>
+        </h3>
+        <button onclick="app.closeScannerModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Scanner Viewport -->
+      <div class="relative w-full aspect-square bg-black rounded-2xl overflow-hidden border-2 border-amber-500/50 flex items-center justify-center">
+        <div id="interactive-qr-reader" class="w-full h-full"></div>
+        <div class="scan-laser pointer-events-none"></div>
+        <!-- Target corners -->
+        <div class="absolute inset-8 border-2 border-dashed border-amber-400/60 rounded-xl pointer-events-none flex items-center justify-center">
+          <span class="text-[11px] text-amber-300 bg-black/60 px-2 py-0.5 rounded backdrop-blur-sm">وجّه الكاميرا نحو كود الـ QR</span>
+        </div>
+      </div>
+
+      <!-- Scan status or error -->
+      <p id="scanner-status-text" class="text-xs text-center text-slate-300">
+        جاري تشغيل الكاميرا للمسح المباشر...
+      </p>
+
+      <!-- Alternate Scan: Upload Image from Device Gallery -->
+      <div class="pt-2 border-t border-slate-800 space-y-2">
+        <label class="w-full bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold py-2.5 px-4 rounded-xl border border-slate-700 cursor-pointer flex items-center justify-center gap-2 text-xs transition">
+          <i class="fa-solid fa-image"></i>
+          <span>اختر صورة كود QR من المعرض / الملفات</span>
+          <input type="file" id="qr-file-input" accept="image/*" onchange="app.handleQrFileUpload(event)" class="hidden">
+        </label>
+        <div id="qr-file-temp-reader" class="hidden"></div>
+      </div>
+
+      <!-- Failsafe: Paste QR code JSON directly -->
+      <details class="text-xs text-slate-400">
+        <summary class="cursor-pointer hover:text-amber-300 py-1">إدخال رمز الكود يدوياً (في حال تعذر الكاميرا)</summary>
+        <div class="pt-2 flex gap-2">
+          <input type="text" id="manual-qr-input" placeholder="ألصق كود الـ QR هنا..." class="glass-input rounded-xl px-3 py-1.5 text-xs flex-1">
+          <button onclick="app.handleManualQrSubmit()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs">
+            تفعيل
+          </button>
+        </div>
+      </details>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: PASTORAL VISITATION COMPLETION NOTE -->
+  <!-- ========================================== -->
+  <div id="visitation-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-emerald-500/40 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-base text-emerald-400 flex items-center gap-2">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span>تسجيل إتمام الافتقاد الرعوي</span>
+        </h3>
+        <button onclick="app.closeVisitationModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-300 space-y-1">
+        <p>المخدوم: <b id="visit-modal-user" class="text-amber-300">مينا</b></p>
+        <p>المسار المنتهي: <b id="visit-modal-track" class="text-slate-100">استهبال</b></p>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-300">ملاحظات الخادم ونتيجة الافتقاد:</label>
+        <textarea id="visit-modal-notes" rows="3" placeholder="اكتب تقرير الافتقاد والتوجيه الروحي والمتابعة..." class="glass-input rounded-xl px-3 py-2 text-xs w-full"></textarea>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <label class="text-xs font-bold text-slate-300">منح درجات إضافية للالتزام:</label>
+        <input type="number" id="visit-bonus-points" value="10" min="0" max="50" class="glass-input rounded-xl px-3 py-1 text-xs w-20 text-center font-bold text-amber-300">
+        <span class="text-xs text-slate-400">درجة</span>
+      </div>
+
+      <div class="pt-2 flex gap-3">
+        <button onclick="app.confirmVisitation()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition">
+          حفظ وتأكيد الافتقاد
+        </button>
+        <button onclick="app.closeVisitationModal()" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-xs transition">
+          إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: PWA INSTALLATION GUIDE (iOS/Android/Win) -->
+  <!-- ========================================== -->
+  <div id="pwa-guide-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 border border-amber-500/40 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-base text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+          <span>طريقة تثبيت التطبيق على جهازك</span>
+        </h3>
+        <button onclick="document.getElementById('pwa-guide-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-300">
+        
+        <!-- Android -->
+        <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/60 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-green-500/20 text-green-400 flex items-center justify-center text-sm flex-shrink-0">
+            <i class="fa-brands fa-android"></i>
+          </div>
+          <div>
+            <b class="text-white block mb-1">أجهزة أندرويد (Android):</b>
+            اضغط على زر الخيارات (⋮) أعلى متصفح Chrome، ثم اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>.
+          </div>
+        </div>
+
+        <!-- iOS -->
+        <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/60 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-slate-500/20 text-slate-200 flex items-center justify-center text-sm flex-shrink-0">
+            <i class="fa-brands fa-apple"></i>
+          </div>
+          <div>
+            <b class="text-white block mb-1">أجهزة آيفون (iOS / Safari):</b>
+            اضغط على زر المشاركة (<i class="fa-solid fa-arrow-up-from-bracket"></i>) أسفل متصفح Safari، ثم اختر <b>«إضافة إلى الشاشة الرئيسية» (Add to Home Screen)</b>.
+          </div>
+        </div>
+
+        <!-- Windows -->
+        <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/60 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm flex-shrink-0">
+            <i class="fa-brands fa-windows"></i>
+          </div>
+          <div>
+            <b class="text-white block mb-1">أجهزة ويندوز (Windows PC):</b>
+            اضغط على أيقونة التثبيت في شريط العنوان بمتصفح Edge أو Chrome لتشغيل التطبيق كنافذة مستقلة وسريعة على سطح المكتب.
+          </div>
+        </div>
+
+      </div>
+
+      <button onclick="document.getElementById('pwa-guide-modal').classList.add('hidden')" class="w-full bg-amber-500 text-slate-950 font-bold py-2.5 rounded-xl text-xs">
+        حسناً، فهمت
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: PHOTO VIEWER (Church Group Photo)    -->
+  <!-- ========================================== -->
+  <div id="photo-viewer-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 hidden" onclick="this.classList.add('hidden')">
+    <div class="max-w-2xl w-full text-center space-y-3" onclick="event.stopPropagation()">
+      <div class="rounded-3xl overflow-hidden border-2 border-amber-500/60 shadow-2xl">
+        <img src="assets/background.jpg" alt="صورة شباب الخدمة" class="w-full max-h-[75vh] object-contain bg-black">
+      </div>
+      <p class="text-amber-300 font-bold text-sm">«اديني واحدة ⲙⲟⲓ ⲛⲏⲓ» - المحبة والتواضع وروح الخدمة</p>
+      <button onclick="document.getElementById('photo-viewer-modal').classList.add('hidden')" class="bg-slate-800 text-slate-300 px-4 py-1.5 rounded-xl text-xs">
+        إغلاق
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar for Mobile -->
+  <nav class="mobile-bottom-nav flex items-center justify-around py-2 px-3 md:hidden">
+    <button onclick="app.showHomeView()" id="nav-btn-home" class="flex flex-col items-center gap-1 text-amber-400 text-[11px] font-bold">
+      <i class="fa-solid fa-house text-base"></i>
+      <span>الرئيسية</span>
+    </button>
+    <button onclick="app.openScannerModal()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-amber-400 text-[11px] font-bold">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center -mt-5 shadow-lg border-2 border-slate-900">
+        <i class="fa-solid fa-qrcode text-lg"></i>
+      </div>
+      <span>مسح كود</span>
+    </button>
+    <button onclick="app.showLeaderboardView()" id="nav-btn-rank" class="flex flex-col items-center gap-1 text-slate-400 hover:text-amber-400 text-[11px] font-bold">
+      <i class="fa-solid fa-trophy text-base"></i>
+      <span>الترتيب الشهري</span>
+    </button>
+    <button onclick="app.openSupervisorViewPrompt()" id="nav-btn-sup" class="flex flex-col items-center gap-1 text-slate-400 hover:text-amber-400 text-[11px] font-bold">
+      <i class="fa-solid fa-user-shield text-base"></i>
+      <span>قسم المشرف</span>
+    </button>
+  </nav>
+
+  <!-- External & Vendor Scripts -->
+  <script src="js/confetti.browser.min.js"></script>
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/html5-qrcode.min.js"></script>
+  
+  <!-- Core App Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/qr-scanner.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          console.log('ServiceWorker registered:', reg.scope);
+        }).catch(err => {
+          console.warn('ServiceWorker registration failed:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
